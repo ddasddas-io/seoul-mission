@@ -290,6 +290,7 @@
             }
         };
 
+
         async function initMap() {
             const { Map } = await google.maps.importLibrary("maps");
             const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
@@ -367,7 +368,12 @@
                     
                     if (currentInfoWindow) currentInfoWindow.close();
                     currentInfoWindow = new google.maps.InfoWindow({ content: content });
-                    currentInfoWindow.open(map, marker);
+                    
+                    // 오류 해결 핵심: 최신 AdvancedMarkerElement 규격에 맞춘 팝업 열기 방식
+                    currentInfoWindow.open({
+                        anchor: marker,
+                        map: map
+                    });
                 });
             });
         }
