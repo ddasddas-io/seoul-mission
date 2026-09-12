@@ -221,7 +221,7 @@ async function initMap() {
             title: loc.name
         });
 
-        marker.addListener("click", () => {
+        marker.addListener("gmp-click", () => {
             const isVisited = state.visited.has(loc.id);
             const btnHtml = isVisited 
                 ? `<button class="btn-checkin" disabled>이미 방문한 장소입니다</button>`
