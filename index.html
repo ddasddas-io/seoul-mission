@@ -196,45 +196,54 @@
             if (currentInfoWindow) currentInfoWindow.close();
         };
 
-        let currentInfoWindow = null;
+        // 기존 initMap 함수 전체를 아래 최신 비동기 함수로 교체합니다.
 
-        function initMap() {
-            map = new google.maps.Map(document.getElementById("map"), {
-                center: { lat: 37.5665, lng: 126.9780 },
-                zoom: 12,
-                disableDefaultUI: true,
-                zoomControl: true
-            });
+let currentInfoWindow = null;
 
-            locations.forEach(loc => {
-                const marker = new google.maps.Marker({
-                    position: { lat: loc.lat, lng: loc.lng },
-                    map: map,
-                    title: loc.name
-                });
+async function initMap() {
+    // 2번, 3번 경고 해결: 최신 라이브러리 비동기 로드(importLibrary) 방식 적용
+    const { Map } = await google.maps.importLibrary("maps");
+    const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
 
-                marker.addListener("click", () => {
-                    const isVisited = state.visited.has(loc.id);
-                    const btnHtml = isVisited 
-                        ? `<button class="btn-checkin" disabled>이미 방문한 장소입니다</button>`
-                        : `<button class="btn-checkin" onclick="checkIn(${loc.id})">도착 확인 (적립하기)</button>`;
+    map = new Map(document.getElementById("map"), {
+        center: { lat: 37.5665, lng: 126.9780 },
+        zoom: 12,
+        disableDefaultUI: true,
+        zoomControl: true,
+        mapId: "DEMO_MAP_ID" // AdvancedMarkerElement 사용을 위한 필수 값
+    });
 
-                    const content = `
-                        <div class="info-window">
-                            <h3>${loc.name}</h3>
-                            <p>미션 보상: ${loc.reward.toLocaleString()}원</p>
-                            ${btnHtml}
-                        </div>
-                    `;
-                    
-                    if (currentInfoWindow) currentInfoWindow.close();
-                    currentInfoWindow = new google.maps.InfoWindow({ content: content });
-                    currentInfoWindow.open(map, marker);
-                });
-            });
-        }
+    locations.forEach(loc => {
+        // 기존 google.maps.Marker 대신 AdvancedMarkerElement 사용
+        const marker = new AdvancedMarkerElement({
+            position: { lat: loc.lat, lng: loc.lng },
+            map: map,
+            title: loc.name
+        });
+
+        marker.addListener("click", () => {
+            const isVisited = state.visited.has(loc.id);
+            const btnHtml = isVisited 
+                ? `<button class="btn-checkin" disabled>이미 방문한 장소입니다</button>`
+                : `<button class="btn-checkin" onclick="checkIn(${loc.id})">도착 확인 (적립하기)</button>`;
+
+            const content = `
+                <div class="info-window">
+                    <h3>${loc.name}</h3>
+                    <p>미션 보상: ${loc.reward.toLocaleString()}원</p>
+                    ${btnHtml}
+                </div>
+            `;
+            
+            if (currentInfoWindow) currentInfoWindow.close();
+            // InfoWindow는 기존 클래스 유지
+            currentInfoWindow = new google.maps.InfoWindow({ content: content });
+            currentInfoWindow.open(map, marker);
+        });
+    });
+}
     </script>
     
-    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDDx0CDIUoBSrQEv-9rpNY0XY35jHNOd_A&callback=initMap"></script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDDx0CDIUoBSrQEv-9rpNY0XY35jHNOd_A&loading=async&callback=initMap"></script>
 </body>
 </html>
